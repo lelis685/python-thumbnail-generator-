@@ -15,6 +15,7 @@ provider:
   environment:
     THUMBNAIL_SIZE: 128
     REGION_NAME: ${self:provider.region}
+    DYNAMODB_TABLE : ${self:custom.dynamoTable}
   
   iam:
     role:
@@ -22,9 +23,13 @@ provider:
        - Effect: 'Allow'
          Resource: '*'
          Action: 's3:*'
+       - Effect: 'Allow'
+         Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*table/${self:provider.environment.DYNAMODB_TABLE}'
+         Action: 'dynamodb:*'
 
 custom:
   bucket: marcolelis-thumbnails
+  dynamoTable: img-url-table
   pythonRequirements:
     dockerizePip: true
 
@@ -37,6 +42,24 @@ functions:
           event: s3:ObjectCreated:*
           rules:
             - suffix: .png
+
+
+resources:
+  Resources:
+    ImagesDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+  
 
 
 plugins:
