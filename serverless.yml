@@ -24,8 +24,14 @@ provider:
          Resource: '*'
          Action: 's3:*'
        - Effect: 'Allow'
-         Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*table/${self:provider.environment.DYNAMODB_TABLE}'
-         Action: 'dynamodb:*'
+         Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+         Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
 
 custom:
   bucket: marcolelis-thumbnails
